@@ -1,6 +1,0 @@
-services:
-  - type: web
-    name: speech-recognition-tool
-    env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: python speech_recognition_tool.py
