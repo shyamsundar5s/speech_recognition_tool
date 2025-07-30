@@ -1,55 +1,66 @@
-# Import necessary libraries
-import speech_recognition as sr
-import pyaudio
-import time
+import streamlit as st
+from streamlit_speech_recognition import speech_to_text
 
-# Constants for commands
-COMMANDS = {
-    "start": "Starting process...",
-    "stop": "Stopping process...",
-    "pause": "Pausing process...",
-    "continue": "Continuing process...",
-    "exit": "Exiting program..."
-}
+# --- Page configuration ---
+st.set_page_config(page_title="🎙️ Speech Recognition Tool", page_icon="🧠")
 
-# Main recognition function
-def recognize_speech():
-    recognizer = sr.Recognizer()
-    mic = sr.Microphone()
+# --- Theme toggle ---
+st.markdown("""
+    <style>
+    .stToggleSwitch label div[data-testid="stMarkdownContainer"] {
+        display: none;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-    # Automatic mic calibration
-    with mic as source:
-        print("[SYSTEM] Calibrating microphone...")
-        recognizer.adjust_for_ambient_noise(source, duration=1)
-        print("[READY] Listening for commands...")
+theme = st.toggle("🌗 Toggle Dark Mode", key="theme_toggle")
 
-    while True:
-        with mic as source:
-            try:
-                audio = recognizer.listen(source, timeout=5)
-                command = recognizer.recognize_google(audio).lower()
-                print(f"[HEARD] \"{command}\"")
+# Apply light/dark background manually
+if theme:
+    st.markdown(
+        """
+        <style>
+        body {
+            background-color: #1e1e1e;
+            color: #ffffff;
+        }
+        .stApp {
+            background-color: #1e1e1e;
+            color: white;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+else:
+    st.markdown(
+        """
+        <style>
+        body {
+            background-color: #ffffff;
+            color: #000000;
+        }
+        .stApp {
+            background-color: #ffffff;
+            color: black;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
-                if command in COMMANDS:
-                    print(f"[ACTION] {COMMANDS[command]}")
-                    if command == "exit":
-                        print("[SYSTEM] Exiting program...")
-                        break
-                else:
-                    print("[WARNING] Unrecognized command.")
+# --- App Title ---
+st.title("🎙️ Speech Recognition Tool")
+st.markdown("Try saying: **`hello`, `open`, `stop`, `exit`**")
 
-            except sr.WaitTimeoutError:
-                print("[WARNING] Listening timed out while waiting for phrase to start.")
-            except sr.UnknownValueError:
-                print("[ERROR] Could not understand audio.")
-            except sr.RequestError as e:
-                print(f"[ERROR] Could not request results from Google Speech Recognition service; {e}")
-            except Exception as e:
-                print(f"[ERROR] An unexpected error occurred: {e}")
+# --- Speech Input Box ---
+text_result = speech_to_text(
+    placeholder="🎤 Click the mic and start speaking...",
+    language="en-US",
+    use_container_width=True
+)
 
-# Main program loop
-if __name__ == "__main__":
-    try:
-        recognize_speech()
-    except KeyboardInterrupt:
-        print("\n[USER] Program terminated.")
+# --- Output ---
+if text_result:
+    st.success(f"You said: **{text_result.lower()}**")
+
